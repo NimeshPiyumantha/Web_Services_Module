@@ -66,8 +66,37 @@
 
       function onUploadClick() {
         console.log("Test Function");
-        const photo = document.getElementById("photo").files[0];
-        console.log("Select File : " + photo);
+
+        const fileInput = document.getElementById("photo");
+
+        if (fileInput.files.length === 0) {
+          console.error("No file selected.");
+          return;
+        }
+
+        const file = fileInput.files[0];
+        console.log("Selected File: ", file.name);
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        fetch("http://127.0.0.1:8000/uploadfile/", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((result) => {
+            console.log("Success:", result);
+            toggleResult();
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
 
         hideContent = true;
         toggleResult();
