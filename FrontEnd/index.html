@@ -42,19 +42,57 @@
     </style>
   </head>
   <body>
-    <h1>Hello World</h1>
+    <section id="hideContentSection">
+      <h1>Hello World</h1>
+      <form enctype="multipart/form-data" id="formDataSection">
+        <input type="file" name="photo" id="photo" placeholder="Choose Photo" />
+        <br />
+        <button type="button" onclick="onUploadClick()">Submit</button>
+      </form>
+    </section>
 
-    <form enctype="multipart/form-data" id="uploadForm">
-      <input type="file" name="photo" id="photo" placeholder="Choose Photo" />
-      <br />
-      <button type="button" onclick="onUploadClick()">Submit</button>
-    </form>
+    <section id="result">
+      <h4>Image has following objects</h4>
+      <ul>
+        <li>Object 1</li>
+        <li>Object 2</li>
+      </ul>
+
+      <button type="button" onclick="toggleResult()">Back Button</button>
+    </section>
 
     <script>
+      let hideContent = false;
+
       function onUploadClick() {
+        console.log("Test Function");
         const photo = document.getElementById("photo").files[0];
-        console.log(photo);
+        console.log("Select File : " + photo);
+
+        hideContent = true;
+        toggleResult();
       }
+
+      function toggleResult() {
+        const resultSection = document.getElementById("result");
+        const hideContentSection =
+          document.getElementById("hideContentSection");
+
+        if (hideContent) {
+          resultSection.style.display = "block";
+          hideContentSection.style.display = "none";
+          hideContent = false;
+        } else {
+          resultSection.style.display = "none";
+          hideContentSection.style.display = "block";
+          hideContent = true;
+        }
+      }
+
+      window.addEventListener("load", function () {
+        console.log("Test Function onload");
+        toggleResult();
+      });
     </script>
   </body>
 </html>
