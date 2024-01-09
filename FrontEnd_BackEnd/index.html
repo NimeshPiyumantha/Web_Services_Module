@@ -2,126 +2,150 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>File Upload</title>
+    <title>Object Detection App</title>
     <style>
+      /* Styling for the body */
       body {
         font-family: Arial, sans-serif;
+        margin: 20px;
         background-color: #f4f4f4;
-        padding: 40px;
-        text-align: center;
       }
 
+      /* Styling for the header */
       h1 {
         color: #333;
+      }
+
+      /* Styling for the input section */
+      #inputSection {
         margin-bottom: 20px;
       }
 
-      input[type="file"] {
-        padding: 10px;
-        margin-bottom: 20px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        background-color: #fff;
-        width: 300px;
-      }
-
+      /* Styling for the upload button */
       button {
         padding: 10px 20px;
         background-color: #007bff;
-        color: #fff;
+        color: white;
         border: none;
-        border-radius: 4px;
         cursor: pointer;
-        transition: background-color 0.3s;
+        border-radius: 5px;
       }
 
-      button:hover {
-        background-color: #0056b3;
+      /* Styling for the result section */
+      #result {
+        display: none; /* Initially hiding the result section */
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Styling for the loading text */
+      #loading {
+        display: none; /* Initially hiding the loading text */
+        color: #007bff;
+        font-size: 24px;
+      }
+
+      /* Styling for the output list */
+      #outputlist {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      /* Styling for the back button */
+      button:last-child {
+        margin-top: 20px;
       }
     </style>
   </head>
   <body>
-    <section id="hideContentSection">
-      <h1>Hello World</h1>
-      <form enctype="multipart/form-data" id="formDataSection">
-        <input type="file" name="photo" id="photo" placeholder="Choose Photo" />
-        <br />
-        <button type="button" onclick="onUploadClick()">Submit</button>
-      </form>
+    <h1>Hello World</h1>
+
+    <section id="inputSection">
+      <input type="file" id="photo" />
+      <button onclick="onUploadClick()">Upload</button>
     </section>
+
+    <h1 id="loading">Loading....</h1>
 
     <section id="result">
       <h4>Image has following objects</h4>
-      <ul>
-        <li>Object 1</li>
-        <li>Object 2</li>
-      </ul>
 
-      <button type="button" onclick="toggleResult()">Back Button</button>
+      <ul id="outputlist"></ul>
+
+      <button onclick="toggleResult()">Back Button</button>
     </section>
 
     <script>
-      let hideContent = false;
+      let canShowResult = false;
+      let canShowLoading = false;
 
       function onUploadClick() {
-        console.log("Test Function");
+        console.log("Test Upload");
+        const selectedFile = document.getElementById("photo").files[0];
+        console.log("Uploaded File", selectedFile);
 
-        const fileInput = document.getElementById("photo");
+        loading(true);
+        uploadFile(selectedFile).then(function (response) {
+          response.json().then(function (json) {
+            listView = "";
 
-        if (fileInput.files.length === 0) {
-          console.error("No file selected.");
-          return;
-        }
-
-        const file = fileInput.files[0];
-        console.log("Selected File: ", file.name);
-
-        const formData = new FormData();
-        formData.append("file", file);
-
-        fetch("http://127.0.0.1:8000/uploadfile/", {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
+            if (json && json.objects) {
+              json.objects.forEach(function (obj) {
+                listView += "<li>" + obj[0] + "-" + obj[1] + "</li>";
+              });
             }
-            return response.json();
-          })
-          .then((result) => {
-            console.log("Success:", result);
+            document.getElementById("outputlist").innerHTML = listView;
+            loading(false);
+            canShowResult = true;
             toggleResult();
-          })
-          .catch((error) => {
-            console.error("Error:", error);
           });
-
-        hideContent = true;
-        toggleResult();
+        });
       }
 
       function toggleResult() {
         const resultSection = document.getElementById("result");
-        const hideContentSection =
-          document.getElementById("hideContentSection");
+        resultSection.style.display = canShowResult ? "block" : "none";
 
-        if (hideContent) {
-          resultSection.style.display = "block";
-          hideContentSection.style.display = "none";
-          hideContent = false;
-        } else {
-          resultSection.style.display = "none";
-          hideContentSection.style.display = "block";
-          hideContent = true;
-        }
+        const inputSection = document.getElementById("inputSection");
+        inputSection.style.display = canShowResult ? "none" : "block";
+
+        canShowResult = !canShowResult;
+      }
+
+      function loading(status) {
+        const resultSection = document.getElementById("loading");
+        resultSection.style.display = status ? "block" : "none";
       }
 
       window.addEventListener("load", function () {
-        console.log("Test Function onload");
+        console.log("onLoad ");
+        loading(false);
         toggleResult();
+
+        connectWithBackEndApi();
       });
+
+      function uploadFile(uploadFile) {
+        const formData = new FormData();
+        formData.append("file", uploadFile, uploadFile.name);
+
+        return fetch("http://127.0.0.1:8000/uploadfile/", {
+          method: "POST",
+          body: formData,
+        });
+      }
+
+      function connectWithBackEndApi() {
+        const response = fetch("http://127.0.0.1:8000").then(function (
+          response
+        ) {
+          response.json().then(function (json) {
+            console.log(json);
+          });
+        });
+      }
     </script>
   </body>
 </html>
