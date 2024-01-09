@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Object Detection App</title>
+    <style>
+      /* Styling for the body */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f4f4f4;
+      }
+
+      /* Styling for the header */
+      h1 {
+        color: #333;
+      }
+
+      /* Styling for the input section */
+      #inputSection {
+        margin-bottom: 20px;
+      }
+
+      /* Styling for the upload button */
+      button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+
+      /* Styling for the result section */
+      #result {
+        display: none; /* Initially hiding the result section */
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Styling for the loading text */
+      #loading {
+        display: none; /* Initially hiding the loading text */
+        color: #007bff;
+        font-size: 24px;
+      }
+
+      /* Styling for the output list */
+      #outputlist {
+        list-style-type: none;
+        padding: 0;
+      }
+
+      /* Styling for the back button */
+      button:last-child {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hello World</h1>
+
+    <section id="inputSection">
+      <input type="file" id="photo" />
+      <button onclick="onUploadClick()">Upload</button>
+    </section>
+
+    <h1 id="loading">Loading....</h1>
+
+    <section id="result">
+      <h4>Image has following objects</h4>
+
+      <ul id="outputlist"></ul>
+
+      <button onclick="toggleResult()">Back Button</button>
+    </section>
+
+    <script>
+      let canShowResult = false;
+      let canShowLoading = false;
+
+      function onUploadClick() {
+        console.log("Test Upload");
+        const selectedFile = document.getElementById("photo").files[0];
+        console.log("Uploaded File", selectedFile);
+
+        loading(true);
+        uploadFile(selectedFile).then(function (response) {
+          response.json().then(function (json) {
+            listView = "";
+
+            if (json && json.objects) {
+              json.objects.forEach(function (obj) {
+                listView += "<li>" + obj[0] + "-" + obj[1] + "</li>";
+              });
+            }
+            document.getElementById("outputlist").innerHTML = listView;
+            loading(false);
+            canShowResult = true;
+            toggleResult();
+          });
+        });
+      }
+
+      function toggleResult() {
+        const resultSection = document.getElementById("result");
+        resultSection.style.display = canShowResult ? "block" : "none";
+
+        const inputSection = document.getElementById("inputSection");
+        inputSection.style.display = canShowResult ? "none" : "block";
+
+        canShowResult = !canShowResult;
+      }
+
+      function loading(status) {
+        const resultSection = document.getElementById("loading");
+        resultSection.style.display = status ? "block" : "none";
+      }
+
+      window.addEventListener("load", function () {
+        console.log("onLoad ");
+        loading(false);
+        toggleResult();
+
+        connectWithBackEndApi();
+      });
+
+      function uploadFile(uploadFile) {
+        const formData = new FormData();
+        formData.append("file", uploadFile, uploadFile.name);
+
+        return fetch("http://127.0.0.1:8000/uploadfile/", {
+          method: "POST",
+          body: formData,
+        });
+      }
+
+      function connectWithBackEndApi() {
+        const response = fetch("http://127.0.0.1:8000").then(function (
+          response
+        ) {
+          response.json().then(function (json) {
+            console.log(json);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
