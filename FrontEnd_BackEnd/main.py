@@ -22,3 +22,6 @@ async def create_upload_file(file: UploadFile=File(...)):
     return {
         "objects":out_reponse
     }
+
+if __name__ == "__main__":
+    uvic
